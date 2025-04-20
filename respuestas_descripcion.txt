@@ -1,0 +1,8 @@
+fase 1:
+El codigo comparaba si mi input era igual a un string que estaba en la dirección guardada en rdi. Imprimi ese string y lo pegue en input
+Fase 2:
+La función chequea que mi input son 2 numeros. Luego los suma,les resta 32 y se lo pasa a misterio. Misterio se fija que el resultado sea un numero que contenga 11 bits en 1, Si pasa el chequeo se fija que uno de los inputs sea negativo.
+Fase 3: 
+Recibe de input un string y un número. Hace una busqueda binaria de los numeros y por cada paso de la busqueda suma el codigo ascci del primer caracter de la palabra que compare con mi input. Cuando la encuentra se fija que el resultado de sumar los codigos ascci sea menor a 799. y mayor a 499. Por ultimo se fija que mi segundo input sea el resultado de esta cuenta.
+fase 4:
+recibe un string de largo 6. Usa el codigo ascci de cada caracter para buscar en un array de char y se fija si se forma la palabra enfoca.
