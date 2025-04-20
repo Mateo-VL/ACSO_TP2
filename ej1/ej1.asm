@@ -106,12 +106,12 @@ string_proc_list_concat_asm:
     ; Prologue
     push rbp
     mov rbp, rsp
-    push rbx                ; Guardar registros callee-saved
+    push rbx                
     push r12
     push r13
     push r14
 
-    ; Guardar argumentos en registros preservados
+  
     mov r12, rsi            ; r12 = type
     mov r14, rdx            ; r14 = hash
     xor rbx, rbx            ; rbx = string = NULL
@@ -121,88 +121,81 @@ string_proc_list_concat_asm:
     test r13, r13           ; ¿current_node == NULL?
     je .fin_ciclo           ; Si es NULL, salir del ciclo
 
-    ; Verificar si current_node->type == type
+
     cmp byte [r13 + offset_type], r12b
-    jne .next_node          ; Si no coincide, pasar al siguiente nodo
+    jne .next_node         
 
     ; Procesar nodo con type coincidente
-    test rbx, rbx           ; ¿string == NULL?
-    jnz .concatenar         ; Si no es NULL, concatenar
+    test rbx, rbx          
+    jnz .concatenar        
 
-    ; Caso: string == NULL -> asignar nuevo string
+
     mov rdi, [r13 + offset_hash] ; rdi = current_node->hash
-    call my_strlen          ; rax = strlen(hash)
-    lea rdi, [rax + 1]      ; rdi = strlen(hash) + 1
+    call my_strlen        
     call malloc             ; rax = nuevo string
-    test rax, rax           ; ¿malloc falló?
-    jz .error               ; Si es NULL, salir con error
+    test rax, rax           ; ¿malloc fa
+    lea rdi, [rax + 1]      ; rdi = strlen(hash) + 1lló?
+    jz .error            
     mov rbx, rax            ; rbx = string nuevo
     mov rdi, rax            ; rdi = destino (string)
     mov rsi, [r13 + offset_hash] ; rsi = origen (current_node->hash)
-    call my_strcpy          ; Copiar hash al nuevo string
-    jmp .next_node          ; Pasar al siguiente nodo
+    call my_strcpy          
+    jmp .next_node        
 
 .concatenar:
-    ; Caso: string != NULL -> concatenar con current_node->hash
     mov rdi, rbx            ; rdi = string actual
     mov rsi, [r13 + offset_hash] ; rsi = current_node->hash
     call str_concat         ; rax = nuevo string concatenado
-    test rax, rax           ; ¿str_concat falló?
-    jz .free_and_error      ; Si es NULL, liberar y salir con error
-    mov rdi, rbx            ; rdi = string viejo (para free)
-    mov rbx, rax            ; rbx = nuevo string
-    call free               ; Liberar string viejo
+    test rax, rax           
+    jz .free_and_error      
+    mov rdi, rbx           
+    mov rbx, rax           
+    call free             
 
 .next_node:
-    mov r13, [r13 + offset_next] ; current_node = current_node->next
-    jmp .ciclo              ; Continuar ciclo
+    mov r13, [r13 + offset_next]
+    jmp .ciclo             
 
 .fin_ciclo:
-    ; Al salir del ciclo, verificar si string sigue siendo NULL
-    test rbx, rbx           ; ¿string == NULL?
-    jne .chequear_hash      ; Si no es NULL, verificar hash
+    test rbx, rbx           
+    jne .chequear_hash      
 
-    ; Caso: string == NULL -> usar hash si no es NULL
-    test r14, r14           ; ¿hash == NULL?
-    jz .error               ; Si es NULL, retornar NULL
+  
+    test r14, r14     
 
-    mov rdi, r14            ; rdi = hash
-    call my_strlen          ; rax = strlen(hash)
-    lea rdi, [rax + 1]      ; rdi = strlen(hash) + 1
-    call malloc             ; rax = nuevo string
-    test rax, rax           ; ¿malloc falló?
-    jz .error               ; Si es NULL, salir con error
-    mov rdi, rax            ; rdi = destino
-    mov rsi, r14            ; rsi = origen (hash)
-    call my_strcpy          ; Copiar hash al nuevo string
-    mov rbx, rax            ; rbx = string nuevo
-    jmp .fin                ; Saltar al final
+    mov rdi, r14           
+    call my_strlen         
+    lea rdi, [rax + 1]     
+    call malloc            
+    test rax, rax           
+    jz .error               
+    mov rdi, rax         
+    mov rsi, r14          
+    call my_strcpy         
+    mov rbx, rax           
+    jmp .fin              
 
 .chequear_hash:
-    ; Verificar si hash != NULL para concatenar al inicio
-    test r14, r14           ; ¿hash == NULL?
-    jz .fin                 ; Si es NULL, no hacer nada
+    test r14, r14        
+    jz .fin               
 
-    ; Concatenar hash al inicio del string existente
-    mov rdi, r14            ; rdi = hash
-    mov rsi, rbx            ; rsi = string actual
-    call str_concat         ; rax = nuevo string (hash + string)
-    test rax, rax           ; ¿str_concat falló?
-    jz .free_and_error      ; Si es NULL, liberar y salir con error
-    mov rdi, rbx            ; rdi = string viejo (para free)
-    mov rbx, rax            ; rbx = nuevo string
-    call free               ; Liberar string viejo
-    jmp .fin                ; Saltar al final
+    mov rdi, r14            
+    mov rsi, rbx            
+    call str_concat         
+    test rax, rax          
+    jz .free_and_error      
+    mov rdi, rbx            
+    mov rbx, rax           
+    call free               
+    jmp .fin                
 
 .free_and_error:
-    ; Liberar string actual y retornar NULL
     mov rdi, rbx
     call free
 .error:
-    xor rax, rax            ; rax = NULL
+    xor rax, rax       
 .fin:
-    ; Epilogue
-    mov rax, rbx            ; Devolver string (o NULL)
+    mov rax, rbx           
     pop r14
     pop r13
     pop r12
